@@ -56,6 +56,7 @@ application {
     mainClass.set("ApplicationKt")
 }
 
+
 tasks.named("ktlintKotlinScriptCheck") {
     enabled = false
 }

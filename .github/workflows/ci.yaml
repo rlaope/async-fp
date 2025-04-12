@@ -24,4 +24,4 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build and Run Tests
-        run: ./gradlew clean build --no-daemon
+        run: ./gradlew clean build -x ktlintKotlinScriptCheck --no-daemon
