@@ -11,6 +11,7 @@ object AsyncProcessor {
     private val logBatch = mutableListOf<LogRequest>()
     private val flushIntervalMillis = 3000L
     private val flushThreshold = 100
+    private val flushRecordRepository by lazy { FlushRecordRepository }
 
     fun start(channel: ReceiveChannel<LogRequest>) {
         scope.launch {
@@ -28,6 +29,7 @@ object AsyncProcessor {
     }
 
     private fun flushToFile() {
+        val start = System.currentTimeMillis()
         val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
         val file = File("logs/log-$timestamp.txt").apply { parentFile.mkdir() }
 
@@ -37,7 +39,17 @@ object AsyncProcessor {
             } + "\n"
         )
 
-        println("Flushed ${logBatch.size} logs to $file")
+        val flushDuration = System.currentTimeMillis() - start
+        println("Flushed ${logBatch.size} logs to ${file.name} in $flushDuration ms")
+        val record = FlushRecord(
+            fileName = file.name,
+            fileCount = logBatch.size,
+            flushDuration = flushDuration,
+            timestamp = LocalDateTime.now()
+        )
+
+        flushRecordRepository.insertFlushRecord(record)
+
         logBatch.clear()
     }
 }
