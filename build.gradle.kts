@@ -10,7 +10,6 @@ plugins {
     kotlin("jvm") version "1.8.22"
     id("io.ktor.plugin") version "2.3.2"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.8.22"
-    id("org.jlleitschuh.gradle.ktlint") version "11.5.0"
 }
 
 group = "com.example"
@@ -56,26 +55,3 @@ application {
     mainClass.set("ApplicationKt")
 }
 
-tasks.register("autoFormatAndCommit") {
-    group = "formatting"
-    description = "Runs ktlintFormat and, if there are changes, commits them automatically."
-    dependsOn("ktlintFormat")
-
-    doLast {
-        exec {
-            commandLine("git", "add", ".")
-        }
-
-        val diffExitValue = exec {
-            commandLine("git", "diff-index", "--quiet", "HEAD")
-            isIgnoreExitValue = true
-        }.exitValue
-
-        // 3. 변경사항이 감지되면 커밋
-        if (diffExitValue != 0) {
-            exec {
-                commandLine("git", "commit", "-m", "Auto-format code using ktlintFormat")
-            }
-        }
-    }
-}
