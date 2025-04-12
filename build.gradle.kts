@@ -56,7 +56,26 @@ application {
     mainClass.set("ApplicationKt")
 }
 
+tasks.register("autoFormatAndCommit") {
+    group = "formatting"
+    description = "Runs ktlintFormat and, if there are changes, commits them automatically."
+    dependsOn("ktlintFormat")
 
-tasks.named("ktlintKotlinScriptCheck") {
-    enabled = false
+    doLast {
+        exec {
+            commandLine("git", "add", ".")
+        }
+
+        val diffExitValue = exec {
+            commandLine("git", "diff-index", "--quiet", "HEAD")
+            isIgnoreExitValue = true
+        }.exitValue
+
+        // 3. 변경사항이 감지되면 커밋
+        if (diffExitValue != 0) {
+            exec {
+                commandLine("git", "commit", "-m", "Auto-format code using ktlintFormat")
+            }
+        }
+    }
 }
